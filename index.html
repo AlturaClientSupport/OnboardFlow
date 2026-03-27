@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Onboarding Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7f6f2;--surface:#fff;--surface2:#f0efe8;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --text:#18180f;--muted:#6b6b5e;--hint:#a8a89a;
+  --accent:#1a472a;--accent-light:#e6f0e9;
+  --font:'Sora',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:10px;--r-lg:14px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.topbar-brand{font-size:14px;font-weight:600;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;}
+.topbar-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.topbar-right{font-size:11px;color:var(--hint);font-family:var(--mono);}
+
+/* 3-PANEL LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* ── LEFT PANEL (entries list) ── */
+.panel-left{width:240px;min-width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.panel-left-top{padding:10px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:7px;}
+.new-btn{width:100%;padding:8px;font-size:12px;font-family:var(--font);font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;transition:background 0.15s;}
+.new-btn:hover{background:#143d22;}
+.search-wrap{position:relative;}
+.search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:12px;height:12px;color:var(--hint);pointer-events:none;}
+.search-wrap input{width:100%;padding:6px 8px 6px 28px;font-size:12px;font-family:var(--font);border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;}
+.search-wrap input::placeholder{color:var(--hint);}
+.filter-row{padding:6px 10px;border-bottom:1px solid var(--border);display:flex;gap:5px;}
+.filter-select{flex:1;font-size:11px;font-family:var(--font);padding:4px 20px 4px 7px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--muted);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;}
+.entries-list{flex:1;overflow-y:auto;padding:6px;}
+.entries-list::-webkit-scrollbar{width:3px;}
+.entries-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.entry-item{padding:9px 10px;border-radius:var(--r);cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:background 0.1s;}
+.entry-item:hover{background:var(--bg);}
+.entry-item.active{background:var(--accent-light);border-color:rgba(26,71,42,0.18);}
+.entry-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.entry-meta{display:flex;align-items:center;gap:5px;margin-top:2px;}
+.entry-date{font-size:10px;color:var(--hint);font-family:var(--mono);}
+.status-pill{font-size:10px;font-weight:500;padding:1px 6px;border-radius:99px;white-space:nowrap;}
+.entry-package{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.empty-list{padding:24px 12px;text-align:center;color:var(--hint);font-size:11px;line-height:1.9;}
+
+/* ── MIDDLE PANEL (client info + forms completion) ── */
+.panel-mid{width:280px;min-width:280px;background:var(--bg);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.panel-mid-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--hint);}
+.panel-mid-empty svg{opacity:0.2;}
+.panel-mid-empty p{font-size:12px;}
+.panel-mid-content{flex:1;display:none;flex-direction:column;overflow:hidden;}
+.mid-section{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;}
+.mid-section:last-child{border-bottom:none;flex:1;}
+.mid-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--hint);margin-bottom:12px;}
+.mid-actions{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end;background:var(--surface);}
+
+/* ── RIGHT PANEL (copyable handoff) ── */
+.panel-right{flex:1;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;}
+.panel-right-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--hint);}
+.panel-right-empty svg{opacity:0.2;}
+.panel-right-empty p{font-size:12px;}
+.panel-right-content{flex:1;display:none;flex-direction:column;overflow:hidden;}
+.right-header{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.right-header-title{font-size:13px;font-weight:600;letter-spacing:-0.01em;}
+.right-header-actions{display:flex;gap:6px;}
+.form-scroll{flex:1;overflow-y:auto;padding:14px 16px;}
+.form-scroll::-webkit-scrollbar{width:3px;}
+.form-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.right-save-bar{background:var(--surface);border-top:1px solid var(--border);padding:9px 16px;display:flex;justify-content:flex-end;gap:6px;flex-shrink:0;}
+
+/* FORM ELEMENTS */
+.form-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 15px;margin-bottom:12px;}
+.form-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--hint);margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--border);}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.form-group:last-child{margin-bottom:0;}
+.form-group label{font-size:11px;font-weight:500;color:var(--muted);}
+.form-group input,.form-group select,.form-group textarea{font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;outline:none;width:100%;transition:border-color 0.15s;}
+.form-group select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:26px;cursor:pointer;}
+.form-group textarea{resize:vertical;min-height:64px;line-height:1.6;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--border2);background:var(--surface);}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--hint);}
+.form-group input:disabled,.form-group select:disabled,.form-group textarea:disabled{background:var(--surface);border-color:transparent;color:var(--text);opacity:1;pointer-events:none;}
+.form-group select:disabled{background-image:none;}
+
+/* CHIPS */
+.chip-group{display:flex;flex-wrap:wrap;gap:5px;align-items:center;}
+.chip{padding:4px 10px;font-size:11px;font-family:var(--font);border-radius:99px;border:1px solid var(--border2);background:var(--bg);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+.chip:hover{border-color:var(--accent);color:var(--accent);}
+.chip.selected{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:600;}
+.chip-add{padding:4px 10px;font-size:11px;font-family:var(--font);border-radius:99px;border:1px dashed var(--border2);background:transparent;color:var(--hint);cursor:pointer;transition:all 0.15s;}
+.chip-add:hover{border-color:var(--accent);color:var(--accent);}
+.chip-group.disabled .chip{pointer-events:none;}
+.chip-group.disabled .chip-add{display:none;}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:5px;}
+.check-item{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:var(--r);background:var(--bg);border:1px solid var(--border);}
+.check-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.check-item span{font-size:12px;color:var(--text);flex:1;}
+.check-item.checked span{text-decoration:line-through;color:var(--hint);}
+.checklist.disabled .check-item input{pointer-events:none;}
+
+/* BUTTONS */
+.hdr-btn{padding:6px 12px;font-size:12px;font-family:var(--font);font-weight:500;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.hdr-btn:hover{background:var(--bg);color:var(--text);}
+.hdr-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.hdr-btn.primary:hover{background:#143d22;}
+.hdr-btn.danger:hover{background:#fdecea;color:#b02a2a;border-color:#f0a0a0;}
+.copy-btn{padding:6px 12px;font-size:12px;font-family:var(--font);font-weight:600;border-radius:var(--r);border:1px solid var(--accent);background:var(--accent-light);color:var(--accent);cursor:pointer;transition:all 0.15s;}
+.copy-btn:hover{background:var(--accent);color:#fff;}
+.mode-badge{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:99px;font-weight:500;}
+.mode-edit{background:#fff3dc;color:#7a5200;}
+.mode-view{background:var(--surface2);color:var(--muted);}
+
+/* STATUS COLORS */
+.s-onboarded{background:#dcf5e8;color:#1a6b42;}
+.s-inprogress{background:#dceeff;color:#1a4a8a;}
+.s-docfollowup{background:#fff3dc;color:#7a5200;}
+.s-notscheduled{background:#ebebeb;color:#555;}
+.s-scheduled{background:#e8e4f8;color:#3d3080;}
+.s-forreschedule{background:#ffe8dc;color:#7a3200;}
+.s-ghosting{background:#f5dcf5;color:#6b1a6b;}
+.s-donotcontact{background:#fce8e8;color:#8a1a1a;}
+.s-noshow{background:#fdecea;color:#b02a2a;}
+.s-others{background:#f0efe9;color:#555;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.22);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--r-lg);padding:20px;width:300px;box-shadow:0 8px 32px rgba(0,0,0,0.12);}
+.modal h3{font-size:14px;font-weight:600;margin-bottom:12px;}
+.modal input{width:100%;padding:7px 10px;font-size:13px;font-family:var(--font);border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;margin-bottom:12px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:6px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#fff;font-size:12px;font-family:var(--font);padding:9px 15px;border-radius:var(--r);opacity:0;transform:translateY(8px);transition:all 0.2s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* DIVIDER label */
+.divider-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);padding:10px 16px 6px;background:var(--bg);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand"><div class="dot"></div>Onboarding Manager</div>
+  <div class="topbar-right" id="entryCount">0 entries</div>
+</div>
+
+<div class="layout">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="panel-left">
+    <div class="panel-left-top">
+      <button class="new-btn" onclick="newOnboarding()">+ New Onboarding</button>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M16 16l4 4" stroke-linecap="round"/></svg>
+        <input type="text" id="searchInput" placeholder="Search by name..." oninput="renderList()"/>
+      </div>
+    </div>
+    <div class="filter-row">
+      <select class="filter-select" id="filterStatus" onchange="renderList()">
+        <option value="">All statuses</option>
+        <option>Onboarded</option><option>In Progress</option><option>Doc Follow Up</option>
+        <option>Not Scheduled</option><option>Scheduled</option><option>For Reschedule</option>
+        <option>Ghosting</option><option>Do not contact</option><option>No Show</option><option>Others</option>
+      </select>
+      <select class="filter-select" id="sortBy" onchange="renderList()">
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+        <option value="name">A–Z</option>
+      </select>
+    </div>
+    <div class="entries-list" id="entriesList"></div>
+  </div>
+
+  <!-- ══ MIDDLE PANEL ══ -->
+  <div class="panel-mid">
+    <div class="panel-mid-empty" id="midEmpty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <p>Select or create an entry</p>
+    </div>
+    <div class="panel-mid-content" id="midContent">
+      <!-- TOP: Client Information -->
+      <div class="mid-section">
+        <div class="mid-section-title">Client information</div>
+        <div class="form-group">
+          <label>Client name</label>
+          <input type="text" id="m_name" placeholder="Full name" oninput="syncName()"/>
+        </div>
+        <div class="form-group">
+          <label>Package sold</label>
+          <select id="m_package">
+            <option value="">— Select package —</option>
+            <option>Executive Business Builder</option>
+            <option>Business Credit Restoration Accelerator</option>
+            <option>Business Credit Optimization Accelerator</option>
+            <option>Black Label Business Accelerator</option>
+            <option>Old Program</option>
+            <option>Performance based</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Status</label>
+          <select id="m_status">
+            <option value="">— Select status —</option>
+            <option>Onboarded</option><option>In Progress</option><option>Doc Follow Up</option>
+            <option>Not Scheduled</option><option>Scheduled</option><option>For Reschedule</option>
+            <option>Ghosting</option><option>Do not contact</option><option>No Show</option><option>Others</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BOTTOM: Forms Completion -->
+      <div class="mid-section" style="flex:1;overflow-y:auto;">
+        <div class="mid-section-title">Forms completion</div>
+        <div class="form-group">
+          <label>Welcome call conducted</label>
+          <select id="m_calltype">
+            <option value="">— Select —</option>
+            <option>Zoom Call</option>
+            <option>Phone Call</option>
+            <option>Not Applicable</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><a href="https://link.alturafunding.com/widget/form/OfTthHAhP0bdF8wE1ABe" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:500;">Funding Form ↗</a> filled out?</label>
+          <select id="m_fundingform">
+            <option value="">— Select —</option>
+            <option>Yes</option>
+            <option>No</option>
+            <option>Incomplete</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label><a href="https://link.alturafunding.com/widget/form/8fH7X8nKdY9eJZy4UNNO" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:500;">Business Credit Form ↗</a> filled out?</label>
+          <select id="m_buscreditform">
+            <option value="">— Select —</option>
+            <option>Yes</option>
+            <option>No</option>
+            <option>Incomplete</option>
+            <option>No Business Credit Cards</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TRACKING -->
+      <div class="mid-section" style="flex:1;overflow-y:auto;">
+        <div class="mid-section-title">Tracking</div>
+        <div class="form-group">
+          <label>GDrive Link</label>
+          <input type="url" id="m_gdrive" placeholder="https://drive.google.com/..."/>
+        </div>
+        <div class="form-group">
+          <label>Uploaded to CRM?</label>
+          <select id="m_uploaded_crm">
+            <option value="">— Select —</option>
+            <option>Yes</option>
+            <option>No</option>
+            <option>Pending</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hand-off Form Submitted to CRM?</label>
+          <select id="m_handoff_crm">
+            <option value="">— Select —</option>
+            <option>Yes</option>
+            <option>No</option>
+            <option>Pending</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Onboarding Form Submitted?</label>
+          <select id="m_onboarding_submitted">
+            <option value="">— Select —</option>
+            <option>Yes</option>
+            <option>No</option>
+            <option>Pending</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mid-actions">
+        <span class="mode-badge mode-edit" id="midModeBadge">editing</span>
+        <button class="hdr-btn danger" id="midDeleteBtn" onclick="deleteEntry()" style="display:none;">Delete</button>
+        <button class="hdr-btn primary" onclick="saveEntry()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL ══ -->
+  <div class="panel-right">
+    <div class="panel-right-empty" id="rightEmpty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+      <p>Select an entry to view the handoff form</p>
+    </div>
+    <div class="panel-right-content" id="rightContent">
+      <div class="right-header">
+        <div class="right-header-title" id="rightTitle">Handoff form</div>
+        <div class="right-header-actions">
+          <button class="copy-btn" onclick="copyHandoff()">📋 Copy Handoff Form</button>
+        </div>
+      </div>
+
+      <div class="form-scroll">
+        <!-- CALL INFORMATION -->
+        <div class="form-section">
+          <div class="form-section-title">Call information</div>
+          <div class="form-group">
+            <label>Package sold</label>
+            <select id="r_package">
+              <option value="">— Select package —</option>
+              <option>Executive Business Builder</option>
+              <option>Business Credit Restoration Accelerator</option>
+              <option>Business Credit Optimization Accelerator</option>
+              <option>Black Label Business Accelerator</option>
+              <option>Old Program</option>
+              <option>Performance based</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sale date</label>
+            <input type="date" id="r_saledate" style="width:160px;"/>
+          </div>
+          <div class="form-group">
+            <label>Closer</label>
+            <div class="chip-group" id="closerChips"></div>
+          </div>
+          <div class="form-group">
+            <label>Onboarding specialist</label>
+            <div class="chip-group" id="specialistChips"></div>
+          </div>
+          <div class="form-group">
+            <label>CSM assigned</label>
+            <div class="chip-group" id="csmChips"></div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Onboarding call date</label>
+            <input type="date" id="r_calldate" style="width:160px;"/>
+          </div>
+        </div>
+
+        <!-- GOALS -->
+        <div class="form-section">
+          <div class="form-section-title">Client goals</div>
+          <div class="form-group">
+            <label>Immediate goals (30 days)</label>
+            <textarea id="r_goal30" placeholder="First 30 days..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Short-term goals (3–6 months)</label>
+            <textarea id="r_goal36" placeholder="3 to 6 months..."></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Long-term goals (12 months)</label>
+            <textarea id="r_goal12" placeholder="12 months out..."></textarea>
+          </div>
+        </div>
+
+        <!-- DOCUMENTS & CREDIT -->
+        <div class="form-section">
+          <div class="form-section-title">Documents & credit</div>
+          <div class="form-group">
+            <label>Document completion status</label>
+            <select id="r_docstatus">
+              <option value="">— Select —</option>
+              <option>Completed</option>
+              <option>Partially Completed</option>
+              <option>None Collected</option>
+            </select>
+          </div>
+
+          <!-- UPLOADED DOCUMENTS CHECKLIST -->
+          <div class="form-group">
+            <label>Uploaded documents</label>
+            <div class="checklist" id="missingChecklist"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Credit report status</label>
+            <select id="r_creditreport">
+              <option value="">— Select —</option>
+              <option>Received</option>
+              <option>Not received</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Credit repair needed</label>
+            <select id="r_creditrepair">
+              <option value="">— Select —</option>
+              <option>Yes</option><option>No</option><option>Pending</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tradelines likely needed</label>
+            <select id="r_tradelines">
+              <option value="">— Select —</option>
+              <option>Yes</option><option>No</option><option>Pending</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Urgent funding request</label>
+            <select id="r_urgent">
+              <option value="">— Select —</option>
+              <option>Yes</option><option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="form-section">
+          <div class="form-section-title">Notes & assessment</div>
+          <div class="form-group">
+            <label>Key client concerns or expectations</label>
+            <textarea id="r_concerns" placeholder="Main concerns or expectations..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Support issues encountered</label>
+            <textarea id="r_issues" placeholder="Any support issues or red flags..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Fundability status</label>
+            <textarea id="r_fundability" placeholder="Current fundability assessment..."></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Recommended first focus area</label>
+            <textarea id="r_focus" placeholder="What to focus on first..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-save-bar">
+        <button class="hdr-btn" onclick="cancelRight()">Discard</button>
+        <button class="hdr-btn primary" onclick="saveEntry()">Save</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- NAME MODAL -->
+<div class="modal-overlay" id="nameModal">
+  <div class="modal">
+    <h3 id="nameModalTitle">Add name</h3>
+    <input type="text" id="nameModalInput" placeholder="Enter name..." onkeydown="if(event.key==='Enter')submitNameModal()"/>
+    <div class="modal-actions">
+      <button class="hdr-btn" onclick="closeNameModal()">Cancel</button>
+      <button class="hdr-btn primary" onclick="submitNameModal()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STATUS_MAP={'Onboarded':'onboarded','In Progress':'inprogress','Doc Follow Up':'docfollowup','Not Scheduled':'notscheduled','Scheduled':'scheduled','For Reschedule':'forreschedule','Ghosting':'ghosting','Do not contact':'donotcontact','No Show':'noshow','Others':'others'};
+
+const DEFAULT_MISSING_ITEMS=[
+  'Government Issued ID','SSN','Proof of Residency','Experian','TransUnion','Equifax',
+  'Bank Statement 1','Bank Statement 2','Bank Statement 3','Bank Statement 4',
+  'EIN Letter (SS-4)','Articles of Organization / Incorporation',
+  'Operating Agreement','Most Recent Tax Returns','Most Recent Pay Stub or 1099'
+];
+
+let entries=[], activeId=null, isNew=false;
+let closers=['Orlando Diaz'];
+let specialists=['Maria Dogelio','Carlo Sale'];
+let csms=['Arnella Manges'];
+let selCloser='', selSpecialist='', selCsm='';
+let missingItems=[];
+let nameModalTarget='';
+
+function loadData(){
+  try{entries=JSON.parse(localStorage.getItem('ob5_entries')||'[]');}catch(e){entries=[];}
+  try{closers=JSON.parse(localStorage.getItem('ob5_closers')||JSON.stringify(closers));}catch(e){}
+  try{specialists=JSON.parse(localStorage.getItem('ob5_specialists')||JSON.stringify(specialists));}catch(e){}
+  try{csms=JSON.parse(localStorage.getItem('ob5_csms')||JSON.stringify(csms));}catch(e){}
+}
+function persist(){
+  localStorage.setItem('ob5_entries',JSON.stringify(entries));
+  localStorage.setItem('ob5_closers',JSON.stringify(closers));
+  localStorage.setItem('ob5_specialists',JSON.stringify(specialists));
+  localStorage.setItem('ob5_csms',JSON.stringify(csms));
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300);}
+function sk(s){return STATUS_MAP[s]||'others';}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${m}/${day}/${y}`;}
+
+// ── CHIPS ──
+function renderChips(cid,list,sel,onSel,target,disabled){
+  const el=document.getElementById(cid);
+  el.className='chip-group'+(disabled?' disabled':'');
+  el.innerHTML='';
+  list.forEach(name=>{
+    const c=document.createElement('span');
+    c.className='chip'+(sel===name?' selected':'');
+    c.textContent=name;
+    if(!disabled)c.onclick=()=>onSel(sel===name?'':name);
+    el.appendChild(c);
+  });
+  if(!disabled){
+    const btn=document.createElement('button');
+    btn.className='chip-add';btn.textContent='+ Add';
+    btn.onclick=()=>openNameModal(target);
+    el.appendChild(btn);
+  }
+}
+function renderAllChips(disabled){
+  renderChips('closerChips',closers,selCloser,v=>{selCloser=v;renderAllChips(disabled);},'closer',disabled);
+  renderChips('specialistChips',specialists,selSpecialist,v=>{selSpecialist=v;renderAllChips(disabled);},'specialist',disabled);
+  renderChips('csmChips',csms,selCsm,v=>{selCsm=v;renderAllChips(disabled);},'csm',disabled);
+}
+
+// ── NAME MODAL ──
+function openNameModal(target){
+  nameModalTarget=target;
+  const labels={'closer':'Add closer','specialist':'Add onboarding specialist','csm':'Add CSM'};
+  document.getElementById('nameModalTitle').textContent=labels[target]||'Add name';
+  document.getElementById('nameModalInput').value='';
+  document.getElementById('nameModal').classList.add('open');
+  setTimeout(()=>document.getElementById('nameModalInput').focus(),80);
+}
+function closeNameModal(){document.getElementById('nameModal').classList.remove('open');nameModalTarget='';}
+function submitNameModal(){
+  const name=document.getElementById('nameModalInput').value.trim();if(!name)return;
+  if(nameModalTarget==='closer'&&!closers.includes(name))closers.push(name);
+  if(nameModalTarget==='specialist'&&!specialists.includes(name))specialists.push(name);
+  if(nameModalTarget==='csm'&&!csms.includes(name))csms.push(name);
+  persist();closeNameModal();renderAllChips(false);toast('Name added!');
+}
+document.getElementById('nameModal').addEventListener('click',function(e){if(e.target===this)closeNameModal();});
+
+// ── MISSING ITEMS ──
+function initMissingItems(saved){
+  // Build from default list, merging any saved checked state
+  const savedMap={};
+  (saved||[]).forEach(i=>{savedMap[i.text]=i.checked;});
+  missingItems=DEFAULT_MISSING_ITEMS.map(text=>({text,checked:savedMap[text]||false}));
+  // Add any custom items from saved that aren't in default
+  (saved||[]).forEach(i=>{
+    if(!DEFAULT_MISSING_ITEMS.includes(i.text))missingItems.push({text:i.text,checked:i.checked});
+  });
+}
+function renderMissingItems(disabled){
+  const el=document.getElementById('missingChecklist');
+  el.className='checklist'+(disabled?' disabled':'');
+  el.innerHTML='';
+  missingItems.forEach((item,i)=>{
+    const row=document.createElement('div');
+    row.className='check-item'+(item.checked?' checked':'');
+    const cb=document.createElement('input');cb.type='checkbox';cb.checked=item.checked;
+    if(!disabled)cb.onchange=()=>{missingItems[i].checked=cb.checked;renderMissingItems(disabled);};
+    else cb.disabled=true;
+    const span=document.createElement('span');span.textContent=item.text;
+    row.appendChild(cb);row.appendChild(span);
+    el.appendChild(row);
+  });
+}
+
+// ── SIDEBAR LIST ──
+function renderList(){
+  const search=document.getElementById('searchInput').value.toLowerCase();
+  const fs=document.getElementById('filterStatus').value;
+  const sort=document.getElementById('sortBy').value;
+  let list=entries.filter(e=>{
+    const ms=!search||(e.name||'').toLowerCase().includes(search);
+    const mf=!fs||e.status===fs;
+    return ms&&mf;
+  });
+  if(sort==='newest')list.sort((a,b)=>b.created-a.created);
+  else if(sort==='oldest')list.sort((a,b)=>a.created-b.created);
+  else list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  const el=document.getElementById('entriesList');
+  const cnt=entries.length;
+  document.getElementById('entryCount').textContent=cnt+' entr'+(cnt===1?'y':'ies');
+  if(!list.length){el.innerHTML=`<div class="empty-list">${search||fs?'No entries match.':'No entries yet.<br><strong>+ New Onboarding</strong>'}</div>`;return;}
+  el.innerHTML=list.map(e=>{
+    const d=e.calldate?fmtDate(e.calldate):e.saledate?fmtDate(e.saledate):'';
+    return`<div class="entry-item${e.id===activeId?' active':''}" onclick="openEntry('${e.id}')">
+      <div class="entry-name">${e.name||'Unnamed'}</div>
+      <div class="entry-meta">
+        ${e.status?`<span class="status-pill s-${sk(e.status)}">${e.status}</span>`:''}
+        ${d?`<span class="entry-date">${d}</span>`:''}
+      </div>
+      ${e.package?`<div class="entry-package">${e.package}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── SHOW PANELS ──
+function showPanels(){
+  document.getElementById('midEmpty').style.display='none';
+  document.getElementById('midContent').style.display='flex';
+  document.getElementById('rightEmpty').style.display='none';
+  document.getElementById('rightContent').style.display='flex';
+}
+
+// ── NEW ONBOARDING ──
+function newOnboarding(){
+  isNew=true;activeId=null;
+  clearMid();clearRight();
+  showPanels();
+  document.getElementById('midModeBadge').textContent='new entry';
+  document.getElementById('midModeBadge').className='mode-badge mode-edit';
+  document.getElementById('midDeleteBtn').style.display='none';
+  document.getElementById('rightTitle').textContent='Handoff form — new entry';
+  renderAllChips(false);
+  initMissingItems([]);
+  renderMissingItems(false);
+  document.getElementById('m_name').focus();
+  renderList();
+}
+
+// ── OPEN ENTRY ──
+function openEntry(id){
+  isNew=false;activeId=id;
+  const e=entries.find(x=>x.id===id);if(!e)return;
+  showPanels();
+  // Populate middle
+  document.getElementById('m_name').value=e.name||'';
+  document.getElementById('m_package').value=e.package||'';
+  document.getElementById('m_status').value=e.status||'';
+  document.getElementById('m_calltype').value=e.calltype||'';
+  document.getElementById('m_fundingform').value=e.fundingform||'';
+  document.getElementById('m_buscreditform').value=e.buscreditform||'';
+  document.getElementById('m_gdrive').value=e.gdrive||'';
+  document.getElementById('m_uploaded_crm').value=e.uploaded_crm||'';
+  document.getElementById('m_handoff_crm').value=e.handoff_crm||'';
+  document.getElementById('m_onboarding_submitted').value=e.onboarding_submitted||'';
+  // Populate right
+  document.getElementById('r_package').value=e.r_package||e.package||'';
+  document.getElementById('r_saledate').value=e.saledate||'';
+  document.getElementById('r_calldate').value=e.calldate||'';
+  document.getElementById('r_goal30').value=e.goal30||'';
+  document.getElementById('r_goal36').value=e.goal36||'';
+  document.getElementById('r_goal12').value=e.goal12||'';
+  document.getElementById('r_docstatus').value=e.docstatus||'';
+  document.getElementById('r_creditreport').value=e.creditreport||'';
+  document.getElementById('r_creditrepair').value=e.creditrepair||'';
+  document.getElementById('r_tradelines').value=e.tradelines||'';
+  document.getElementById('r_urgent').value=e.urgent||'';
+  document.getElementById('r_concerns').value=e.concerns||'';
+  document.getElementById('r_issues').value=e.issues||'';
+  document.getElementById('r_fundability').value=e.fundability||'';
+  document.getElementById('r_focus').value=e.focus||'';
+  selCloser=e.closer||'';
+  selSpecialist=e.specialist||'';
+  selCsm=e.csm||'';
+  renderAllChips(false);
+  initMissingItems(e.missingItems||[]);
+  renderMissingItems(false);
+  document.getElementById('midModeBadge').textContent='viewing';
+  document.getElementById('midModeBadge').className='mode-badge mode-view';
+  document.getElementById('midDeleteBtn').style.display='inline-block';
+  document.getElementById('rightTitle').textContent=e.name||'Handoff form';
+  renderList();
+}
+
+function syncName(){
+  if(activeId||isNew){
+    document.getElementById('rightTitle').textContent=document.getElementById('m_name').value||'Handoff form';
+  }
+}
+
+function clearMid(){
+  ['m_name','m_package','m_status','m_calltype','m_fundingform','m_buscreditform','m_gdrive','m_uploaded_crm','m_handoff_crm','m_onboarding_submitted'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+}
+function clearRight(){
+  ['r_package','r_saledate','r_calldate','r_goal30','r_goal36','r_goal12','r_docstatus','r_creditreport','r_creditrepair','r_tradelines','r_urgent','r_concerns','r_issues','r_fundability','r_focus'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  selCloser='';selSpecialist='';selCsm='';
+}
+
+// ── SAVE ──
+function saveEntry(){
+  const name=document.getElementById('m_name').value.trim();
+  if(!name){toast('Please enter a client name');document.getElementById('m_name').focus();return;}
+  const data={
+    name,
+    package:document.getElementById('m_package').value,
+    status:document.getElementById('m_status').value,
+    calltype:document.getElementById('m_calltype').value,
+    fundingform:document.getElementById('m_fundingform').value,
+    buscreditform:document.getElementById('m_buscreditform').value,
+    gdrive:document.getElementById('m_gdrive').value,
+    uploaded_crm:document.getElementById('m_uploaded_crm').value,
+    handoff_crm:document.getElementById('m_handoff_crm').value,
+    onboarding_submitted:document.getElementById('m_onboarding_submitted').value,
+    r_package:document.getElementById('r_package').value,
+    saledate:document.getElementById('r_saledate').value,
+    calldate:document.getElementById('r_calldate').value,
+    closer:selCloser,specialist:selSpecialist,csm:selCsm,
+    goal30:document.getElementById('r_goal30').value,
+    goal36:document.getElementById('r_goal36').value,
+    goal12:document.getElementById('r_goal12').value,
+    docstatus:document.getElementById('r_docstatus').value,
+    missingItems:[...missingItems],
+    creditreport:document.getElementById('r_creditreport').value,
+    creditrepair:document.getElementById('r_creditrepair').value,
+    tradelines:document.getElementById('r_tradelines').value,
+    urgent:document.getElementById('r_urgent').value,
+    concerns:document.getElementById('r_concerns').value,
+    issues:document.getElementById('r_issues').value,
+    fundability:document.getElementById('r_fundability').value,
+    focus:document.getElementById('r_focus').value,
+  };
+  if(isNew){
+    const entry={id:'ob_'+Date.now(),created:Date.now(),...data};
+    entries.unshift(entry);activeId=entry.id;isNew=false;
+  } else {
+    const i=entries.findIndex(x=>x.id===activeId);
+    if(i>-1)entries[i]={...entries[i],...data};
+  }
+  persist();
+  document.getElementById('midModeBadge').textContent='saved';
+  document.getElementById('midModeBadge').className='mode-badge mode-view';
+  document.getElementById('midDeleteBtn').style.display='inline-block';
+  document.getElementById('rightTitle').textContent=name;
+  toast('Entry saved!');
+  renderList();
+}
+
+function cancelRight(){if(activeId)openEntry(activeId);else if(isNew)newOnboarding();}
+
+function deleteEntry(){
+  if(!activeId)return;
+  const e=entries.find(x=>x.id===activeId);
+  if(!confirm(`Delete onboarding for "${e?.name||'this client'}"?`))return;
+  entries=entries.filter(x=>x.id!==activeId);persist();activeId=null;isNew=false;
+  document.getElementById('midEmpty').style.display='flex';
+  document.getElementById('midContent').style.display='none';
+  document.getElementById('rightEmpty').style.display='flex';
+  document.getElementById('rightContent').style.display='none';
+  toast('Entry deleted');renderList();
+}
+
+// ── COPY HANDOFF ──
+function copyHandoff(){
+  const v=id=>{const el=document.getElementById(id);return el&&el.value?el.value:'—';};
+  const uploadedItems=missingItems.filter(i=>i.checked).map(i=>i.text);
+  const missingItemsList=missingItems.filter(i=>!i.checked).map(i=>i.text);
+  const missingText=missingItemsList.length?missingItemsList.join(', '):'None';
+  const name=document.getElementById('m_name').value||'—';
+
+  const text=
+`Client: ${name}
+
+Package sold: ${v('r_package')}
+Sale date: ${document.getElementById('r_saledate').value?fmtDate(document.getElementById('r_saledate').value):'—'}
+Closer: ${selCloser||'—'}
+Onboarding specialist: ${selSpecialist||'—'}
+CSM assigned: ${selCsm||'—'}
+Onboarding call date: ${document.getElementById('r_calldate').value?fmtDate(document.getElementById('r_calldate').value):'—'}
+
+Immediate goals (30 days): ${v('r_goal30')}
+Short-term goals (3–6 months): ${v('r_goal36')}
+Long-term goals (12 months): ${v('r_goal12')}
+
+Document completion status: ${v('r_docstatus')}
+Missing items list: ${missingText}
+Credit report status: ${v('r_creditreport')}
+Credit repair needed: ${v('r_creditrepair')}
+Tradelines likely needed: ${v('r_tradelines')}
+Urgent funding request: ${v('r_urgent')}
+
+Key client concerns or expectations: ${v('r_concerns')}
+Support issues encountered: ${v('r_issues')}
+Fundability status: ${v('r_fundability')}
+Recommended first focus area: ${v('r_focus')}`;
+
+  navigator.clipboard.writeText(text).then(()=>toast('Handoff form copied!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Handoff form copied!');
+  });
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveEntry();}
+  if(e.key==='Escape'){
+    if(document.getElementById('nameModal').classList.contains('open')){closeNameModal();}
+  }
+});
+
+loadData();renderList();
+</script>
+</body>
+</html>
