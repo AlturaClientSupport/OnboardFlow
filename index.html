@@ -15,6 +15,12 @@
   --font:'Sora',sans-serif;--mono:'JetBrains Mono',monospace;
   --r:10px;--r-lg:14px;
 }
+body.dark{
+  --bg:#141414;--surface:#1e1e1e;--surface2:#252525;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#e8e8e0;--muted:#9a9a8e;--hint:#555550;
+  --accent:#4a9e6a;--accent-light:#1a2e22;
+}
 body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;}
 
 /* TOPBAR */
@@ -145,15 +151,80 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
 
 /* DIVIDER label */
 .divider-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);padding:10px 16px 6px;background:var(--bg);}
+
+/* THEME TOGGLE */
+.theme-toggle{background:none;border:1px solid var(--border2);border-radius:99px;padding:4px 10px;cursor:pointer;font-size:13px;line-height:1;color:var(--muted);transition:all 0.15s;display:flex;align-items:center;gap:5px;}
+.theme-toggle:hover{background:var(--surface2);color:var(--text);}
+
+/* DETAIL VIEW */
+.detail-view{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.detail-view.active{display:flex;}
+.detail-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.detail-breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;}
+.detail-breadcrumb .back-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--muted);font-size:12px;font-family:var(--font);cursor:pointer;transition:all 0.15s;}
+.detail-breadcrumb .back-btn:hover{background:var(--bg);color:var(--text);}
+.detail-breadcrumb .sep{color:var(--hint);}
+.detail-breadcrumb .crumb-name{color:var(--text);font-weight:600;}
+.detail-status-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;}
+.detail-panels{display:flex;flex:1;overflow:hidden;}
+
+/* DETAIL PANEL 1 — CLIENT SNAPSHOT */
+.dp1{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:18px 16px;}
+.dp1::-webkit-scrollbar{width:3px;}
+.dp1::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.client-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0;margin-bottom:10px;}
+.client-snapshot-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.client-snapshot-package{font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.4;}
+.snapshot-field{margin-bottom:12px;}
+.snapshot-field:last-child{margin-bottom:0;}
+.snapshot-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);margin-bottom:3px;}
+.snapshot-value{font-size:12px;font-weight:500;color:var(--text);}
+.snapshot-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.snapshot-date-input{font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:5px 8px;outline:none;width:140px;transition:border-color 0.15s;}
+.snapshot-date-input:focus{border-color:var(--border2);background:var(--surface);}
+
+/* DETAIL PANEL 2 — ACTIVITY LOG */
+.dp2{flex:6;min-width:0;background:var(--bg);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.dp2-header{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.dp2-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);}
+.dp2-input-area{padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.dp2-textarea{width:100%;font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;outline:none;resize:none;min-height:72px;line-height:1.6;transition:border-color 0.15s;}
+.dp2-textarea:focus{border-color:var(--border2);background:var(--surface);}
+.dp2-textarea::placeholder{color:var(--hint);}
+.dp2-add-btn{margin-top:7px;width:100%;padding:7px;font-size:12px;font-family:var(--font);font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;transition:background 0.15s;}
+.dp2-add-btn:hover{background:#143d22;}
+body.dark .dp2-add-btn:hover{background:#3a8a5a;}
+.dp2-log{flex:1;overflow-y:auto;padding:10px 14px;}
+.dp2-log::-webkit-scrollbar{width:3px;}
+.dp2-log::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.log-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;}
+.log-ts{font-size:10px;font-family:var(--mono);color:var(--hint);margin-bottom:5px;}
+.log-note{font-size:12px;color:var(--text);line-height:1.6;}
+.log-empty{text-align:center;padding:32px 16px;color:var(--hint);font-size:11px;line-height:1.9;}
+
+/* DETAIL PANEL 3 — PLAYBOOK */
+.dp3{flex:4;min-width:0;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;}
+.dp3-header{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 14px;flex-shrink:0;}
+.dp3-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);}
+.dp3-body{flex:1;padding:14px;display:flex;flex-direction:column;overflow:hidden;}
+.dp3-textarea{flex:1;width:100%;font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;outline:none;resize:none;line-height:1.7;transition:border-color 0.15s;}
+.dp3-textarea:focus{border-color:var(--border2);}
+.dp3-textarea::placeholder{color:var(--hint);}
+.dp3-save-bar{background:var(--surface);border-top:1px solid var(--border);padding:9px 14px;display:flex;justify-content:flex-end;flex-shrink:0;}
+
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="topbar-brand"><div class="dot"></div>Onboarding Manager</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="topbar-brand"><div class="dot"></div>Onboarding Manager</div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
+  </div>
   <div class="topbar-right" id="entryCount">0 entries</div>
 </div>
 
+<div id="mainView" style="display:flex;flex:1;overflow:hidden;">
 <div class="layout">
 
   <!-- ══ LEFT PANEL ══ -->
@@ -305,6 +376,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
       <div class="right-header">
         <div class="right-header-title" id="rightTitle">Handoff form</div>
         <div class="right-header-actions">
+          <button class="hdr-btn" id="clientDetailBtn" onclick="openDetail()" style="display:none;">Client Detail</button>
           <button class="copy-btn" onclick="copyHandoff()">📋 Copy Handoff Form</button>
         </div>
       </div>
@@ -444,6 +516,82 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh
   </div>
 
 </div><!-- /layout -->
+</div><!-- /mainView -->
+
+<!-- ══ DETAIL VIEW ══ -->
+<div class="detail-view" id="detailView">
+  <div class="detail-topbar">
+    <div class="detail-breadcrumb">
+      <button class="back-btn" onclick="closeDetail()">← Back</button>
+      <span class="sep">/</span>
+      <span>OnboardFlow</span>
+      <span class="sep">/</span>
+      <span class="crumb-name" id="detailClientName">—</span>
+    </div>
+    <span class="detail-status-badge status-pill" id="detailStatusBadge"></span>
+  </div>
+
+  <div class="detail-panels">
+    <!-- Panel 1: Client Snapshot -->
+    <div class="dp1">
+      <div class="client-avatar" id="detailAvatar">—</div>
+      <div class="client-snapshot-name" id="detailSnapName">—</div>
+      <div class="client-snapshot-package" id="detailSnapPackage">—</div>
+      <hr class="snapshot-divider"/>
+      <div class="snapshot-field">
+        <div class="snapshot-label">CSM assigned</div>
+        <div class="snapshot-value" id="detailCsm">—</div>
+      </div>
+      <div class="snapshot-field">
+        <div class="snapshot-label">Onboarding specialist</div>
+        <div class="snapshot-value" id="detailSpecialist">—</div>
+      </div>
+      <div class="snapshot-field">
+        <div class="snapshot-label">Sale date</div>
+        <div class="snapshot-value" id="detailSaleDate">—</div>
+      </div>
+      <div class="snapshot-field">
+        <div class="snapshot-label">Call date</div>
+        <div class="snapshot-value" id="detailCallDate">—</div>
+      </div>
+      <hr class="snapshot-divider"/>
+      <div class="snapshot-field">
+        <div class="snapshot-label">Last touch date</div>
+        <input type="date" class="snapshot-date-input" id="detailLastTouch" onchange="saveDetailDates()"/>
+      </div>
+      <div class="snapshot-field">
+        <div class="snapshot-label">Next touchpoint</div>
+        <input type="date" class="snapshot-date-input" id="detailNextTouch" onchange="saveDetailDates()"/>
+      </div>
+    </div>
+
+    <!-- Panel 2: Activity Log -->
+    <div class="dp2">
+      <div class="dp2-header">
+        <span class="dp2-title">Activity Log</span>
+        <button class="copy-btn" onclick="copyActivityLog()" style="font-size:11px;padding:4px 10px;">Copy for AI</button>
+      </div>
+      <div class="dp2-input-area">
+        <textarea class="dp2-textarea" id="newNoteInput" placeholder="Add a note..."></textarea>
+        <button class="dp2-add-btn" onclick="addNote()">Add note</button>
+      </div>
+      <div class="dp2-log" id="activityLog"></div>
+    </div>
+
+    <!-- Panel 3: Playbook / Notes -->
+    <div class="dp3">
+      <div class="dp3-header">
+        <div class="dp3-title">Playbook / Notes</div>
+      </div>
+      <div class="dp3-body">
+        <textarea class="dp3-textarea" id="playbookNotes" placeholder="Add client-specific handling notes, scripts, or reminders here..."></textarea>
+      </div>
+      <div class="dp3-save-bar">
+        <button class="hdr-btn primary" onclick="savePlaybook()">Save playbook</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- NAME MODAL -->
 <div class="modal-overlay" id="nameModal">
@@ -610,6 +758,7 @@ function newOnboarding(){
   document.getElementById('midModeBadge').textContent='new entry';
   document.getElementById('midModeBadge').className='mode-badge mode-edit';
   document.getElementById('midDeleteBtn').style.display='none';
+  document.getElementById('clientDetailBtn').style.display='none';
   document.getElementById('rightTitle').textContent='Handoff form — new entry';
   renderAllChips(false);
   initMissingItems([]);
@@ -659,6 +808,7 @@ function openEntry(id){
   document.getElementById('midModeBadge').textContent='viewing';
   document.getElementById('midModeBadge').className='mode-badge mode-view';
   document.getElementById('midDeleteBtn').style.display='inline-block';
+  document.getElementById('clientDetailBtn').style.display='inline-block';
   document.getElementById('rightTitle').textContent=e.name||'Handoff form';
   renderList();
 }
@@ -725,6 +875,7 @@ function saveEntry(){
   document.getElementById('midModeBadge').textContent='saved';
   document.getElementById('midModeBadge').className='mode-badge mode-view';
   document.getElementById('midDeleteBtn').style.display='inline-block';
+  document.getElementById('clientDetailBtn').style.display='inline-block';
   document.getElementById('rightTitle').textContent=name;
   toast('Entry saved!');
   renderList();
@@ -791,7 +942,111 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-loadData();renderList();
+// ── THEME TOGGLE ──
+function toggleTheme(){
+  const dark=document.body.classList.toggle('dark');
+  document.getElementById('themeToggle').textContent=dark?'🌙':'☀️';
+  localStorage.setItem('ob5_theme',dark?'dark':'light');
+}
+function loadTheme(){
+  const t=localStorage.getItem('ob5_theme');
+  if(t==='dark'){document.body.classList.add('dark');document.getElementById('themeToggle').textContent='🌙';}
+}
+
+// ── DETAIL VIEW ──
+function openDetail(){
+  if(!activeId)return;
+  const e=entries.find(x=>x.id===activeId);if(!e)return;
+  // Populate snapshot
+  const initials=(e.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('detailAvatar').textContent=initials;
+  document.getElementById('detailClientName').textContent=e.name||'—';
+  document.getElementById('detailSnapName').textContent=e.name||'—';
+  document.getElementById('detailSnapPackage').textContent=e.package||'—';
+  document.getElementById('detailCsm').textContent=e.csm||'—';
+  document.getElementById('detailSpecialist').textContent=e.specialist||'—';
+  document.getElementById('detailSaleDate').textContent=e.saledate?fmtDate(e.saledate):'—';
+  document.getElementById('detailCallDate').textContent=e.calldate?fmtDate(e.calldate):'—';
+  document.getElementById('detailLastTouch').value=e.lasttouch||'';
+  document.getElementById('detailNextTouch').value=e.nexttouchpoint||'';
+  // Status badge
+  const badge=document.getElementById('detailStatusBadge');
+  badge.textContent=e.status||'';
+  badge.className='detail-status-badge status-pill s-'+(e.status?sk(e.status):'others');
+  badge.style.display=e.status?'inline-block':'none';
+  // Activity log
+  renderActivityLog(e);
+  // Playbook
+  document.getElementById('playbookNotes').value=e.playbooknotes||'';
+  document.getElementById('newNoteInput').value='';
+  // Swap views
+  document.getElementById('mainView').style.display='none';
+  document.getElementById('detailView').classList.add('active');
+}
+
+function closeDetail(){
+  document.getElementById('detailView').classList.remove('active');
+  document.getElementById('mainView').style.display='flex';
+}
+
+function saveDetailDates(){
+  if(!activeId)return;
+  const i=entries.findIndex(x=>x.id===activeId);if(i<0)return;
+  entries[i].lasttouch=document.getElementById('detailLastTouch').value;
+  entries[i].nexttouchpoint=document.getElementById('detailNextTouch').value;
+  persist();
+}
+
+// ── ACTIVITY LOG ──
+function renderActivityLog(e){
+  const log=e.activitylog||[];
+  const el=document.getElementById('activityLog');
+  if(!log.length){
+    el.innerHTML='<div class="log-empty">No notes yet.<br>Add the first entry above.</div>';
+    return;
+  }
+  el.innerHTML=[...log].reverse().map(n=>`
+    <div class="log-entry">
+      <div class="log-ts">${n.ts}</div>
+      <div class="log-note">${n.note.replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+}
+
+function addNote(){
+  if(!activeId)return;
+  const note=document.getElementById('newNoteInput').value.trim();
+  if(!note){document.getElementById('newNoteInput').focus();return;}
+  const i=entries.findIndex(x=>x.id===activeId);if(i<0)return;
+  if(!entries[i].activitylog)entries[i].activitylog=[];
+  const now=new Date();
+  const ts=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  entries[i].activitylog.push({ts,note});
+  persist();
+  document.getElementById('newNoteInput').value='';
+  renderActivityLog(entries[i]);
+  toast('Note added!');
+}
+
+function copyActivityLog(){
+  if(!activeId)return;
+  const e=entries.find(x=>x.id===activeId);if(!e)return;
+  const log=e.activitylog||[];
+  if(!log.length){toast('No notes to copy');return;}
+  const text=log.map(n=>`[${n.ts}]\n${n.note}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(()=>toast('Activity log copied!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Activity log copied!');
+  });
+}
+
+// ── PLAYBOOK ──
+function savePlaybook(){
+  if(!activeId)return;
+  const i=entries.findIndex(x=>x.id===activeId);if(i<0)return;
+  entries[i].playbooknotes=document.getElementById('playbookNotes').value;
+  persist();toast('Playbook saved!');
+}
+
+loadData();loadTheme();renderList();
 </script>
 </body>
 </html>
