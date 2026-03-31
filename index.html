@@ -310,7 +310,7 @@ body.dark .dp2-add-btn:hover{background:#3a8a5a;}
         </div>
         <div class="form-group">
           <label>Package sold</label>
-          <select id="m_package" onchange="handleMPackageSelect(this)">
+          <select id="m_package">
             <option value="">— Select package —</option>
             <option>Executive Business Builder</option>
             <option>Business Credit Restoration Accelerator</option>
@@ -318,7 +318,6 @@ body.dark .dp2-add-btn:hover{background:#3a8a5a;}
             <option>Black Label Business Accelerator</option>
             <option>Old Program</option>
             <option>Performance based</option>
-            <option value="__add__">+ Add new package...</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0;">
@@ -430,13 +429,14 @@ body.dark .dp2-add-btn:hover{background:#3a8a5a;}
           <div class="form-section-title">Call information</div>
           <div class="form-group">
             <label>Package sold</label>
-            <select id="r_package" onchange="handlePackageSelect(this)">
+            <select id="r_package">
+              <option value="">— Select package —</option>
+              <option>Executive Business Builder</option>
               <option>Business Credit Restoration Accelerator</option>
               <option>Business Credit Optimization Accelerator</option>
               <option>Black Label Business Accelerator</option>
               <option>Old Program</option>
               <option>Performance based</option>
-              <option value="__add__">+ Add new package...</option>
             </select>
           </div>
           <div class="form-group">
@@ -672,7 +672,6 @@ function loadData(){
   try{closers=JSON.parse(localStorage.getItem('ob5_closers')||JSON.stringify(closers));}catch(e){}
   try{specialists=JSON.parse(localStorage.getItem('ob5_specialists')||JSON.stringify(specialists));}catch(e){}
   try{csms=JSON.parse(localStorage.getItem('ob5_csms')||JSON.stringify(csms));}catch(e){}
-  loadPackages();
 }
 function persist(){
   localStorage.setItem('ob5_entries',JSON.stringify(entries));
@@ -712,7 +711,7 @@ function renderAllChips(disabled){
 // ── NAME MODAL ──
 function openNameModal(target){
   nameModalTarget=target;
-  const labels={'closer':'Add closer','specialist':'Add onboarding specialist','csm':'Add CSM','package':'Add new package'};
+  const labels={'closer':'Add closer','specialist':'Add onboarding specialist','csm':'Add CSM'};
   document.getElementById('nameModalTitle').textContent=labels[target]||'Add name';
   document.getElementById('nameModalInput').value='';
   document.getElementById('nameModal').classList.add('open');
@@ -724,12 +723,6 @@ function submitNameModal(){
   if(nameModalTarget==='closer'&&!closers.includes(name))closers.push(name);
   if(nameModalTarget==='specialist'&&!specialists.includes(name))specialists.push(name);
   if(nameModalTarget==='csm'&&!csms.includes(name))csms.push(name);
-  if(nameModalTarget==='package'&&!customPackages.includes(name)){
-    customPackages.push(name);savePackages();
-    refreshAllPackageSelects(name);
-    document.getElementById('r_package').value=name;
-    toast('Package added!');closeNameModal();return;
-  }
   persist();closeNameModal();renderAllChips(false);toast('Name added!');
 }
 
@@ -924,7 +917,7 @@ function newOnboarding(){
   renderAllChips(false);
   initMissingItems([]);
   renderMissingItems(false);
-  refreshAllPackageSelects('');
+  document.getElementById('r_package').value='';
   document.getElementById('m_name').focus();
   renderList();
 }
@@ -946,8 +939,7 @@ function openEntry(id){
   document.getElementById('m_handoff_crm').value=e.handoff_crm||'';
   document.getElementById('m_onboarding_submitted').value=e.onboarding_submitted||'';
   // Populate right
-  refreshPackageSelect('r_package',e.r_package||e.package||'');
-  refreshPackageSelect('m_package',e.package||'');
+  document.getElementById('r_package').value=e.r_package||e.package||'';
   document.getElementById('r_saledate').value=e.saledate||'';
   document.getElementById('r_calldate').value=e.calldate||'';
   document.getElementById('r_goal30').value=e.goal30||'';
@@ -1231,22 +1223,6 @@ function saveEditLog(origIndex){
   toast('Note updated!');
 }
 
-// ── PACKAGE SELECT ──
-let customPackages=[];
-function loadPackages(){
-  try{customPackages=JSON.parse(localStorage.getItem('ob5_packages')||'[]');}catch(e){customPackages=[];}
-}
-function savePackages(){localStorage.setItem('ob5_packages',JSON.stringify(customPackages));}
-function refreshPackageSelect(selectId, currentVal){
-  const sel=document.getElementById(selectId);if(!sel)return;
-  const baseOptions=['Executive Business Builder','Business Credit Restoration Accelerator','Business Credit Optimization Accelerator','Black Label Business Accelerator','Old Program','Performance based'];
-  const all=[...baseOptions,...customPackages];
-  sel.innerHTML='<option value="">— Select package —</option>'+all.map(p=>`<option${p===currentVal?' selected':''}>${p}</option>`).join('')+'<option value="__add__">+ Add new package...</option>';
-}
-function refreshAllPackageSelects(val){
-  refreshPackageSelect('r_package', val||document.getElementById('r_package')?.value||'');
-  refreshPackageSelect('m_package', val||document.getElementById('m_package')?.value||'');
-}
 
 function addNote(){
   if(!activeId)return;
@@ -1282,8 +1258,4 @@ function savePlaybook(){
   persist();toast('Playbook saved!');
 }
 
-function handlePackageSelect(sel){if(sel.value==='__add__'){sel.value='';openNameModal('package');}}
-function handleMPackageSelect(sel){if(sel.value==='__add__'){sel.value='';openNameModal('package');}}
 </script>
-</body>
-</html>
